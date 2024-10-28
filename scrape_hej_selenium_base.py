@@ -9,7 +9,7 @@ from time import sleep
 from random import uniform
 import numpy as np
 from datetime import datetime, timedelta
-from text_extractor import extract_text
+from shared_scripts.text_extractor import extract_text
 import os
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
