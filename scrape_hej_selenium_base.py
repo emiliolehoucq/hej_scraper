@@ -15,6 +15,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload
 import json
+from shared_scripts.salary_functions import check_salary
 
 ##################################### Setting parameters #####################################
 
@@ -314,14 +315,22 @@ for url_job_posting in urls_job_postings:
         source_code_job_posting = driver.page_source
         logger.info("Got the source code.")
 
-        # Add the source code to the list
-        data_given_job_posting.append(source_code_job_posting)
-        logger.info("Added the source code to the list.")
-
         # Extract the text from the source code
         text_job_posting = extract_text(source_code_job_posting)
         logger.info("Extracted the text from the source code.")
 
+        # Check if there seems to be salary info
+        salary_flag = check_salary(text_job_posting)
+        logger.info(f"salary_flag: {salary_flag}.")
+
+        # Append salary flag to the list
+        data_given_job_posting.append(salary_flag)
+        logger.info("Salary flag appended to the list.")
+        
+        # Add the source code to the list
+        data_given_job_posting.append(source_code_job_posting)
+        logger.info("Added the source code to the list.")
+        
         # Append the text to the list
         data_given_job_posting.append(text_job_posting)
         logger.info("Text appended to the list.")
@@ -333,6 +342,7 @@ for url_job_posting in urls_job_postings:
         logger.info(f"Couldn't scrape {url_job_posting}. Error: {e}")
 
         # Append FAILURE to the data for given posting instead of source code and text
+        data_given_job_posting.append("FAILURE")
         data_given_job_posting.append("FAILURE")
         data_given_job_posting.append("FAILURE")
         logger.info("Appended FAILURE to the list.")
@@ -363,12 +373,12 @@ for attempt in range(RETRIES):
         logger.info(f"Re-try block for data for postings (Google Sheets). Attempt {attempt + 1}.")
 
         # Range to write the data
-        range_sheet="A"+str(n_postings+1)+":B10000000"
+        range_sheet="A"+str(n_postings+1)+":C10000000"
         logger.info("Prepared range to write the data for the postings.")
 
         # Body of the request
         # The first element is the job code
-        body={"values": [element[:2] for element in data_all_job_postings]} # job code in column A and timestamp in column B
+        body={"values": [element[:2] for element in data_all_job_postings]} # job code in column A and timestamp in column B and salary_flag in column C
         logger.info("Prepared body of the request for the postings.")
 
         # Execute the request
