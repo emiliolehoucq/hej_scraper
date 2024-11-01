@@ -28,6 +28,7 @@ jobs:
 
         # Specify the files to include in sparse-checkout, pulling them into the shared_scripts directory
         echo "text_extractor.py" >> .git/info/sparse-checkout
+        echo "salary_functions.py" >> .git/info/sparse-checkout
 
         # Pull only the specified files from the main branch
         git pull origin main
