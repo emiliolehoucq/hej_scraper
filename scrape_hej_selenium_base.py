@@ -378,7 +378,7 @@ for attempt in range(RETRIES):
 
         # Body of the request
         # The first element is the job code
-        body={"values": [element[:2] for element in data_all_job_postings]} # job code in column A and timestamp in column B and salary_flag in column C
+        body={"values": [element[:3] for element in data_all_job_postings]} # job code in column A and timestamp in column B and salary_flag in column C
         logger.info("Prepared body of the request for the postings.")
 
         # Execute the request
