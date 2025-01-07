@@ -1,4 +1,4 @@
-# Script to scrape Counselor Education jobs from HigherEdJobs
+# Script to scrape RCD jobs from HigherEdJobs
 # Emilio Lehoucq
 
 ##################################### Importing libraries #####################################
@@ -9,13 +9,12 @@ from time import sleep
 from random import uniform
 import numpy as np
 from datetime import datetime, timedelta
-from shared_scripts.text_extractor import extract_text
+from text_extractor import extract_text
 import os
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload
 import json
-from shared_scripts.salary_functions import check_salary
 
 ##################################### Setting parameters #####################################
 
@@ -28,7 +27,7 @@ START_TIME = datetime.now()
 MAX_DURATION = timedelta(hours=5, minutes=0)
 
 # URL to scrape
-URL_COUNSELOR_EDUCATION_JOBS = "https://www.higheredjobs.com/faculty/search.cfm?JobCat=62"
+URL_RCD_JOBS = "https://www.higheredjobs.com/search/advanced_action.cfm?JobCat=211&JobCat=163&JobCat=161&JobCat=175&JobCat=173&JobCat=162&JobCat=159&JobCat=160&JobCat=218&JobCat=150&JobCat=34&JobCat=43&JobCat=1&JobCat=164&JobCat=207&PosType=1&PosType=2&InstType=1&InstType=2&Keyword=statistician+OR+%22data+scientist%22+OR+%22research+computing%22+OR+%22high+performance+computing%22+OR+%22research+software%22&Remote=1&Remote=2&Region=&Submit=Search+Jobs"
 
 # Sleep time
 MIN_SLEEP_TIME = 2
@@ -184,8 +183,8 @@ for attempt in range(RETRIES):
         logger.info("Created service for Google Sheets")
 
         # Get the values from the Google Sheet with the postings
-        # https://docs.google.com/spreadsheets/d/1MQxHUKmwEpeq8ObtZF6NQyyhH4nLf7S5BceFacGxN74/edit?gid=0#gid=0
-        spreadsheet_postings_id = "1MQxHUKmwEpeq8ObtZF6NQyyhH4nLf7S5BceFacGxN74"
+        # https://docs.google.com/spreadsheets/d/1ocBHCOXtR6T-w19Dqf3x6zDn2nwLakve9WKmSxx6Fyg/edit?gid=0#gid=0
+        spreadsheet_postings_id = "1ocBHCOXtR6T-w19Dqf3x6zDn2nwLakve9WKmSxx6Fyg"
         result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_postings_id, range='A:A').execute()
         existing_postings = result.get("values", []) # Example output: [['test1'], ['abc'], ['123']]
         logger.info("Got data from Google Sheets with the postings.")
@@ -220,17 +219,17 @@ for attempt in range(RETRIES):
 driver = Driver(uc=True, headless=True) # TODO: uncomment for GitHub Actions
 logger.info("Driver initialized.")
 
-##################################### Scrape all the counselor education jobs #####################################
+##################################### Scrape all RCD jobs #####################################
 
 # Iterate over the number of retries
-logger.info("Re-try block for URL_COUNSELOR_EDUCATION_JOBS about to start.")
+logger.info("Re-try block for URL_RCD_JOBS about to start.")
 for attempt in range(RETRIES):
     logger.info(f"Attempt {attempt + 1} of {RETRIES}.")
 
     try:
         # Go to the URL
-        driver.get(URL_COUNSELOR_EDUCATION_JOBS)
-        logger.info(f"Driver went to {URL_COUNSELOR_EDUCATION_JOBS}.")
+        driver.get(URL_RCD_JOBS)
+        logger.info(f"Driver went to {URL_RCD_JOBS}.")
 
         # Break the re-try loop if successful
         logger.info("Re-try block successful. About to break the re-try loop.")
@@ -318,14 +317,6 @@ for url_job_posting in urls_job_postings:
         # Extract the text from the source code
         text_job_posting = extract_text(source_code_job_posting)
         logger.info("Extracted the text from the source code.")
-
-        # Check if there seems to be salary info
-        salary_flag = check_salary(text_job_posting)
-        logger.info(f"salary_flag: {salary_flag}.")
-
-        # Append salary flag to the list
-        data_given_job_posting.append(salary_flag)
-        logger.info("Salary flag appended to the list.")
         
         # Add the source code to the list
         data_given_job_posting.append(source_code_job_posting)
@@ -342,7 +333,6 @@ for url_job_posting in urls_job_postings:
         logger.info(f"Couldn't scrape {url_job_posting}. Error: {e}")
 
         # Append FAILURE to the data for given posting instead of source code and text
-        data_given_job_posting.append("FAILURE")
         data_given_job_posting.append("FAILURE")
         data_given_job_posting.append("FAILURE")
         logger.info("Appended FAILURE to the list.")
@@ -373,12 +363,12 @@ for attempt in range(RETRIES):
         logger.info(f"Re-try block for data for postings (Google Sheets). Attempt {attempt + 1}.")
 
         # Range to write the data
-        range_sheet="A"+str(n_postings+1)+":C10000000"
+        range_sheet="A"+str(n_postings+1)+":B10000000"
         logger.info("Prepared range to write the data for the postings.")
 
         # Body of the request
         # The first element is the job code
-        body={"values": [element[:3] for element in data_all_job_postings]} # job code in column A and timestamp in column B and salary_flag in column C
+        body={"values": [element[:2] for element in data_all_job_postings]} # job code in column A and timestamp in column B
         logger.info("Prepared body of the request for the postings.")
 
         # Execute the request
@@ -413,8 +403,8 @@ logger.info("Wrote new data to Google Sheets for the postings.")
 # Data for the postings
 
 # Folder ID
-# https://drive.google.com/drive/u/4/folders/1oXJ1hvagM0-_Hd6Tqd9-O3BJSqfS1Y56
-folder_id = "1oXJ1hvagM0-_Hd6Tqd9-O3BJSqfS1Y56" 
+# https://drive.google.com/drive/u/3/folders/1iCDM3vtQ_UxGHlmCrpcHA_SAPks5PDov
+folder_id = "1iCDM3vtQ_UxGHlmCrpcHA_SAPks5PDov"
 
 # Retry block in case of failure
 for attempt in range(RETRIES):
