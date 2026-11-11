@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.12.7' # same as local machine
+        python-version: '3.12' # same as local machine
 
     - name: Install dependencies
       run: pip install -r requirements_scrape_hej_selenium_base.txt
